@@ -478,19 +478,20 @@ func (p *LinuxResourcePool) restoreContainerVersion(id string) (semver.Version, 
 func (p *LinuxResourcePool) acquirePoolResources(spec garden.ContainerSpec, id string, logger lager.Logger) (*linux_backend.Resources, error) {
 	resources := linux_backend.NewResources(0, nil, "", nil, p.externalIP)
 
-	subnet, ip, err := parseNetworkSpec(spec.Network)
-	if err != nil {
-		return nil, fmt.Errorf("create container: invalid network spec: %v", err)
-	}
+	// subnet, ip, err := parseNetworkSpec(spec.Network)
+	// if err != nil {
+	// 	return nil, fmt.Errorf("create container: invalid network spec: %v", err)
+	// }
 
 	if err := p.acquireUID(resources, spec.Privileged); err != nil {
 		return nil, err
 	}
 
-	if resources.Network, err = p.subnetPool.Acquire(subnet, ip, logger.Session("subnet-pool")); err != nil {
-		p.releasePoolResources(resources, logger)
-		return nil, err
-	}
+	resources.Network = &linux_backend.Network{}
+	// if resources.Network, err = p.subnetPool.Acquire(subnet, ip, logger.Session("subnet-pool")); err != nil {
+	// 	p.releasePoolResources(resources, logger)
+	// 	return nil, err
+	// }
 
 	return resources, nil
 }
@@ -511,7 +512,7 @@ func (p *LinuxResourcePool) releasePoolResources(resources *linux_backend.Resour
 	}
 
 	if resources.Network != nil {
-		p.subnetPool.Release(resources.Network, logger.Session("subnet-pool"))
+		//p.subnetPool.Release(resources.Network, logger.Session("subnet-pool"))
 	}
 }
 
@@ -529,14 +530,14 @@ func (p *LinuxResourcePool) acquireSystemResources(id, handle, containerPath, ro
 
 	createCmd := path.Join(p.binPath, "create.sh")
 	create := exec.Command(createCmd, containerPath)
-	suff, _ := resources.Network.Subnet.Mask.Size()
+	//suff, _ := resources.Network.Subnet.Mask.Size()
 	env := process.Env{
 		"id":                   id,
 		"rootfs_path":          rootfsPath,
-		"network_host_ip":      subnets.GatewayIP(resources.Network.Subnet).String(),
-		"network_container_ip": resources.Network.IP.String(),
-		"network_cidr_suffix":  strconv.Itoa(suff),
-		"network_cidr":         resources.Network.Subnet.String(),
+		"network_host_ip":      "", //subnets.GatewayIP(resources.Network.Subnet).String(),
+		"network_container_ip": "", // resources.Network.IP.String(),
+		"network_cidr_suffix":  "30",
+		"network_cidr":         "",//resources.Network.Subnet.String(),
 		"external_ip":          p.externalIP.String(),
 		"container_iface_mtu":  fmt.Sprintf("%d", p.mtu),
 		"bridge_iface":         resources.Bridge,
@@ -588,10 +589,10 @@ func (p *LinuxResourcePool) acquireSystemResources(id, handle, containerPath, ro
 	}
 
 	pLog.Debug("setup-iptables-starting")
-	if err = p.filterProvider.ProvideFilter(id).Setup(handle); err != nil {
-		pLog.Error("setup-iptables-failed", err)
-		return "", nil, fmt.Errorf("resource_pool: set up filter: %v", err)
-	}
+	// if err = p.filterProvider.ProvideFilter(id).Setup(handle); err != nil {
+	// 	pLog.Error("setup-iptables-failed", err)
+	// 	return "", nil, fmt.Errorf("resource_pool: set up filter: %v", err)
+	// }
 	pLog.Debug("setup-iptables-ended")
 
 	return rootfsPath, rootFSEnvVars, nil
@@ -632,12 +633,12 @@ func (p *LinuxResourcePool) setupContainerDirectories(pLog lager.Logger, id, han
 		return "", nil, err
 	}
 
-	pLog.Debug("setup-bridge-starting")
-	if err := p.setupBridge(pLog, id, resources); err != nil {
-		p.rootfsProvider.Remove(layercake.ContainerID(rootfsPath))
-		return "", nil, err
-	}
-	pLog.Debug("setup-bridge-ended")
+	// pLog.Debug("setup-bridge-starting")
+	// if err := p.setupBridge(pLog, id, resources); err != nil {
+	// 	p.rootfsProvider.Remove(layercake.ContainerID(rootfsPath))
+	// 	return "", nil, err
+	// }
+	// pLog.Debug("setup-bridge-ended")
 
 	return rootfsPath, rootFSEnvVars, nil
 }

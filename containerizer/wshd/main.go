@@ -8,11 +8,9 @@ import (
 	"path/filepath"
 	"runtime"
 
-	"github.com/cloudfoundry-incubator/garden-linux/container_daemon"
 	"github.com/cloudfoundry-incubator/garden-linux/container_daemon/unix_socket"
 	"github.com/cloudfoundry-incubator/garden-linux/containerizer"
 	"github.com/cloudfoundry-incubator/garden-linux/containerizer/system"
-	"github.com/cloudfoundry-incubator/garden-linux/sysinfo"
 	"github.com/cloudfoundry/gunk/command_runner/linux_command_runner"
 )
 
@@ -75,12 +73,12 @@ func main() {
 	}
 
 	beforeCloneInitializer := &system.Initializer{Steps: []system.StepRunner{
-		&containerizer.FuncStep{
-			(&container_daemon.RlimitsManager{}).Init,
-		},
+		// &containerizer.FuncStep{
+		// 	(&container_daemon.RlimitsManager{}).Init,
+		// },
 	}}
 
-	maxUID := sysinfo.Min(sysinfo.MustGetMaxValidUID(), sysinfo.MustGetMaxValidGID())
+	maxUID := 65000
 	cz := containerizer.Containerizer{
 		BeforeCloneInitializer: beforeCloneInitializer,
 		InitBinPath:            path.Join(binPath, "initc"),

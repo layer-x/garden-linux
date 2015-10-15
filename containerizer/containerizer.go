@@ -1,12 +1,8 @@
 package containerizer
 
 import (
-	"bytes"
 	"fmt"
 	"os"
-	"os/exec"
-	"path"
-	"path/filepath"
 	"strconv"
 	"time"
 
@@ -62,15 +58,15 @@ type Containerizer struct {
 }
 
 func (c *Containerizer) Create() error {
-	if err := c.BeforeCloneInitializer.Init(); err != nil {
-		return fmt.Errorf("containerizer: before clone initializer: %s", err)
-	}
+	// if err := c.BeforeCloneInitializer.Init(); err != nil {
+	// 	return fmt.Errorf("containerizer: before clone initializer: %s", err)
+	// }
 
 	// Temporary until we merge the hook scripts functionality in Golang
-	cmd := exec.Command(path.Join(c.LibPath, "hook"), "parent-before-clone")
-	if err := c.CommandRunner.Run(cmd); err != nil {
-		return fmt.Errorf("containerizer: run `parent-before-clone`: %s", err)
-	}
+	// cmd := exec.Command(path.Join(c.LibPath, "hook"), "parent-before-clone")
+	// if err := c.CommandRunner.Run(cmd); err != nil {
+	// 	return fmt.Errorf("containerizer: run `parent-before-clone`: %s", err)
+	// }
 
 	pid, err := c.Execer.Exec(c.InitBinPath, c.InitArgs...)
 	if err != nil {
@@ -83,26 +79,26 @@ func (c *Containerizer) Create() error {
 		return fmt.Errorf("containerizer: failed to set PID env var: %s", err)
 	}
 
-	var stderr bytes.Buffer
-	cmd = exec.Command(path.Join(c.LibPath, "hook"), "parent-after-clone")
-	cmd.Stderr = &stderr
-	if err := c.CommandRunner.Run(cmd); err != nil {
-		return fmt.Errorf("containerizer: run `parent-after-clone`: %s. stderr: %s", err, stderr.String())
-	}
+	// var stderr bytes.Buffer
+	// cmd = exec.Command(path.Join(c.LibPath, "hook"), "parent-after-clone")
+	// cmd.Stderr = &stderr
+	// if err := c.CommandRunner.Run(cmd); err != nil {
+	// 	return fmt.Errorf("containerizer: run `parent-after-clone`: %s. stderr: %s", err, stderr.String())
+	// }
 
-	pivotter := exec.Command(filepath.Join(c.LibPath, "pivotter"), "-rootfs", c.RootfsPath)
-	pivotter.Env = append(pivotter.Env, fmt.Sprintf("TARGET_NS_PID=%d", pid))
-	if err := c.CommandRunner.Run(pivotter); err != nil {
-		return fmt.Errorf("containerizer: run pivotter: %s", err)
-	}
+	// pivotter := exec.Command(filepath.Join(c.LibPath, "pivotter"), "-rootfs", c.RootfsPath)
+	// pivotter.Env = append(pivotter.Env, fmt.Sprintf("TARGET_NS_PID=%d", pid))
+	// if err := c.CommandRunner.Run(pivotter); err != nil {
+	// 	return fmt.Errorf("containerizer: run pivotter: %s", err)
+	// }
 
-	if err := c.Signaller.SignalSuccess(); err != nil {
-		return fmt.Errorf("containerizer: send success singnal to the container: %s", err)
-	}
+	// if err := c.Signaller.SignalSuccess(); err != nil {
+	// 	return fmt.Errorf("containerizer: send success singnal to the container: %s", err)
+	// }
 
-	if err := c.Waiter.Wait(timeout); err != nil {
-		return fmt.Errorf("containerizer: wait for container: %s", err)
-	}
+	// if err := c.Waiter.Wait(timeout); err != nil {
+	// 	return fmt.Errorf("containerizer: wait for container: %s", err)
+	// }
 
 	return nil
 }

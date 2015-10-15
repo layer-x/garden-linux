@@ -7,6 +7,7 @@ shopt -s nullglob
 
 cd $(dirname $0)
 
+exit 0
 source ./etc/config
 
 cgroup_path="${GARDEN_CGROUP_PATH}"

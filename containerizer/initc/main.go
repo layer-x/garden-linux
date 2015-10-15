@@ -8,7 +8,6 @@ import (
 	"runtime"
 	"strconv"
 	"syscall"
-	"time"
 
 	"github.com/cloudfoundry-incubator/cf-lager"
 	"github.com/cloudfoundry-incubator/garden-linux/containerizer"
@@ -50,19 +49,19 @@ func main() {
 		missing("--root")
 	}
 
-	syncReader := os.NewFile(uintptr(3), "/dev/a")
-	defer syncReader.Close()
-	syncWriter := os.NewFile(uintptr(4), "/dev/d")
-	defer syncWriter.Close()
+	// syncReader := os.NewFile(uintptr(3), "/dev/a")
+	// defer syncReader.Close()
+	// syncWriter := os.NewFile(uintptr(4), "/dev/d")
+	// defer syncWriter.Close()
 
-	sync := &containerizer.PipeSynchronizer{
-		Reader: syncReader,
-		Writer: syncWriter,
-	}
+	// sync := &containerizer.PipeSynchronizer{
+	// 	Reader: syncReader,
+	// 	Writer: syncWriter,
+	// }
 
-	if err := sync.Wait(2 * time.Minute); err != nil {
-		fail(fmt.Sprintf("initc: wait for host: %s", err), 8)
-	}
+	// if err := sync.Wait(2 * time.Minute); err != nil {
+	// 	fail(fmt.Sprintf("initc: wait for host: %s", err), 8)
+	// }
 
 	env, err := process.EnvFromFile(*configFilePath)
 	if err != nil {
@@ -116,8 +115,6 @@ func main() {
 	containerizer := containerizer.Containerizer{
 		RootfsPath:           *rootFsPath,
 		ContainerInitializer: initializer,
-		Waiter:               sync,
-		Signaller:            sync,
 	}
 
 	if err := containerizer.Init(); err != nil {

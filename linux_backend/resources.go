@@ -62,8 +62,8 @@ type Network struct {
 
 func (n *Network) MarshalJSON() ([]byte, error) {
 	return json.Marshal(map[string]string{
-		"IP":     n.IP.String(),
-		"Subnet": n.Subnet.String(),
+		// "IP":     n.IP.String(),
+		// "Subnet": n.Subnet.String(),
 	})
 }
 

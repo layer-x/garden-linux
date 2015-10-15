@@ -377,34 +377,34 @@ func (c *LinuxContainer) Start() error {
 	cLog := c.logger.Session("start", lager.Data{"handle": c.Handle()})
 	cLog.Debug("starting")
 
-	cLog.Debug("iptables-setup-starting")
-	err := c.ipTablesManager.ContainerSetup(
-		c.ID(), c.Resources.Bridge, c.Resources.Network.IP, c.Resources.Network.Subnet,
-	)
-	if err != nil {
-		cLog.Error("iptables-setup-failed", err)
-		return fmt.Errorf("container: start: %v", err)
-	}
-	cLog.Debug("iptables-setup-ended")
+	// cLog.Debug("iptables-setup-starting")
+	// err := c.ipTablesManager.ContainerSetup(
+	// 	c.ID(), c.Resources.Bridge, c.Resources.Network.IP, c.Resources.Network.Subnet,
+	// )
+	// if err != nil {
+	// 	cLog.Error("iptables-setup-failed", err)
+	// 	return fmt.Errorf("container: start: %v", err)
+	// }
+	// cLog.Debug("iptables-setup-ended")
 
 	cLog.Debug("wshd-start-starting")
-	start := exec.Command(path.Join(c.ContainerPath, "start.sh"))
-	start.Env = []string{
-		"id=" + c.ID(),
-		"PATH=" + os.Getenv("PATH"),
-	}
+	// start := exec.Command(path.Join(c.ContainerPath, "start.sh"))
+	// start.Env = []string{
+	// 	"id=" + c.ID(),
+	// 	"PATH=" + os.Getenv("PATH"),
+	// }
 
-	cRunner := logging.Runner{
-		CommandRunner: c.runner,
-		Logger:        cLog,
-	}
+	// cRunner := logging.Runner{
+	// 	CommandRunner: c.runner,
+	// 	Logger:        cLog,
+	// }
 
-	err = cRunner.Run(start)
-	if err != nil {
-		cLog.Error("wshd-start-failed", err)
-		return fmt.Errorf("container: start: %v", err)
-	}
-	cLog.Debug("wshd-start-ended")
+	// err := cRunner.Run(start)
+	// if err != nil {
+	// 	cLog.Error("wshd-start-failed", err)
+	// 	return fmt.Errorf("container: start: %v", err)
+	// }
+	// cLog.Debug("wshd-start-ended")
 
 	c.setState(linux_backend.StateActive)
 

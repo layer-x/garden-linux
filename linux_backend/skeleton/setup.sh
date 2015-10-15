@@ -23,6 +23,8 @@ network_cidr_suffix=${network_cidr_suffix:-30}
 root_uid=${root_uid:-10000}
 rootfs_path=$(readlink -f $rootfs_path)
 
+exit 0
+
 if [ ! -d $rootfs_path/tmp ]; then
   mkdir $rootfs_path/tmp
 fi
@@ -48,6 +50,7 @@ root_uid=$root_uid
 rootfs_path=$rootfs_path
 external_ip=$external_ip
 EOS
+
 
 if [ ! -d $rootfs_path/proc ]; then
   mkdir -p $rootfs_path/proc
