@@ -21,5 +21,13 @@ if [ ! -d ${target} ]; then
 fi
 
 cp -r skeleton/* "${target}"/.
+ln `pwd`/bin/wshd "${target}"/bin/
+ln `pwd`/lib/pivotter "${target}"/lib/
+ln `pwd`/bin/iodaemon "${target}"/bin/
+ln `pwd`/bin/wsh "${target}"/bin/
+ln `pwd`/bin/initc "${target}"/bin/
+ln `pwd`/lib/hook "${target}"/lib/
+ln `pwd`/bin/oom "${target}"/bin/
+ln `pwd`/bin/nstar "${target}"/bin/
 unshare -m "${target}"/setup.sh
 echo ${target}
