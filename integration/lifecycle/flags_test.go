@@ -103,7 +103,7 @@ var _ = Describe("Garden startup flags", func() {
 
 		JustBeforeEach(func() {
 			client = startGarden(args...)
-			layersPath = path.Join(client.GraphPath, "btrfs", "subvolumes")
+			layersPath = path.Join(client.GraphPath, "aufs", "layers")
 
 			container, err := client.Create(garden.ContainerSpec{
 				RootFSPath: "docker:///busybox",
@@ -144,7 +144,7 @@ var _ = Describe("Garden startup flags", func() {
 					"--persistentImage", "docker://banana/bananatest",
 					"--persistentImage", "docker:///cloudfoundry/with-volume",
 				)
-				layersPath = path.Join(client.GraphPath, "btrfs", "subvolumes")
+				layersPath = path.Join(client.GraphPath, "aufs", "layers")
 
 				Eventually(client, "30s").Should(gbytes.Say("retain.retained"))
 			})
@@ -201,7 +201,7 @@ var _ = Describe("Garden startup flags", func() {
 		Context("when it is not set", func() {
 			BeforeEach(func() {
 				client = startGarden()
-				layersPath = path.Join(client.GraphPath, "btrfs", "subvolumes")
+				layersPath = path.Join(client.GraphPath, "aufs", "layers")
 			})
 
 			Context("and destroying a container", func() {

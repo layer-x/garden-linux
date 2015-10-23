@@ -1,13 +1,12 @@
 package main
 
 import (
-	"bytes"
 	"flag"
 	"fmt"
 	"net"
 	"os"
-	"os/exec"
 	"os/signal"
+	"path/filepath"
 	"runtime"
 	"strings"
 	"syscall"
@@ -42,8 +41,7 @@ import (
 	"github.com/cloudfoundry/gunk/command_runner"
 	"github.com/cloudfoundry/gunk/command_runner/linux_command_runner"
 	"github.com/docker/docker/daemon/graphdriver"
-	_ "github.com/docker/docker/daemon/graphdriver/btrfs"
-	_ "github.com/docker/docker/daemon/graphdriver/vfs"
+	_ "github.com/docker/docker/daemon/graphdriver/aufs"
 	"github.com/docker/docker/graph"
 	_ "github.com/docker/docker/pkg/chrootarchive" // allow reexec of docker-applyLayer
 	"github.com/docker/docker/pkg/reexec"
@@ -98,18 +96,6 @@ var enableGraphCleanup = flag.Bool(
 	"enableGraphCleanup",
 	false,
 	"enables graph garbage collection",
-)
-
-var disableQuotas = flag.Bool(
-	"disableQuotas",
-	false,
-	"disable disk quotas",
-)
-
-var btrfsForceSync = flag.Bool(
-	"btrfsForceSync",
-	true,
-	"force btrfs synchronization before gathering metrics",
 )
 
 var containerGraceTime = flag.Duration(
@@ -297,19 +283,16 @@ func main() {
 		logger.Fatal("failed-to-construct-graph", err)
 	}
 
-	graphMountPoint := mountPoint(logger, *graphRoot)
-
 	var cake layercake.Cake = &layercake.Docker{
 		Graph: dockerGraph,
 	}
 
-	if cake.DriverName() == "btrfs" {
-		cake = &layercake.BtrfsCleaningCake{
-			Cake:            cake,
-			Runner:          runner,
-			BtrfsMountPoint: graphMountPoint,
-			RemoveAll:       os.RemoveAll,
-			Logger:          logger.Session("btrfs-cleanup"),
+	if cake.DriverName() == "aufs" {
+		cake = &layercake.AufsCake{
+			Cake:     cake,
+			Runner:   runner,
+			RootPath: filepath.Join(*graphRoot, "aufs"),
+			Logger:   logger.Session("aufs-cake"),
 		}
 	}
 
@@ -329,6 +312,7 @@ func main() {
 		},
 		RemoteFetchers: map[registry.APIVersion]repository_fetcher.VersionedFetcher{
 			registry.APIVersion1: &repository_fetcher.RemoteV1Fetcher{
+
 				Cake:      ovenCleanerCake,
 				GraphLock: lock,
 			},
@@ -406,13 +390,6 @@ func main() {
 	}
 
 	var quotaManager linux_container.QuotaManager = quota_manager.DisabledQuotaManager{}
-	if !*disableQuotas {
-		quotaManager = &quota_manager.BtrfsQuotaManager{
-			Runner:      runner,
-			MountPoint:  graphMountPoint,
-			SyncEnabled: *btrfsForceSync,
-		}
-	}
 
 	ipTablesMgr := createIPTablesManager(config, runner, logger)
 	injector := &provider{
@@ -487,23 +464,6 @@ func main() {
 	})
 
 	select {}
-}
-
-func mountPoint(logger lager.Logger, path string) string {
-	dfOut := new(bytes.Buffer)
-
-	df := exec.Command("df", path)
-	df.Stdout = dfOut
-	df.Stderr = os.Stderr
-
-	err := df.Run()
-	if err != nil {
-		logger.Fatal("failed-to-get-mount-info", err)
-	}
-
-	dfOutputWords := strings.Split(string(dfOut.Bytes()), " ")
-
-	return strings.Trim(dfOutputWords[len(dfOutputWords)-1], "\n")
 }
 
 func missing(flagName string) {

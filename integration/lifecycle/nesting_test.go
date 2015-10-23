@@ -82,7 +82,7 @@ var _ = Describe("When nested", func() {
 				"-c",
 				fmt.Sprintf(`
 				set -e
-				mkdir /tmp/containers /tmp/snapshots /tmp/graph;
+				mkdir /tmp/containers /tmp/snapshots /tmp/graph
 
 				./bin/garden-linux \
 					-bin /root/binpath/bin \
@@ -91,7 +91,6 @@ var _ = Describe("When nested", func() {
 					-snapshots /tmp/snapshots \
 					-graph /tmp/graph \
 					-tag n \
-					-disableQuotas \
 					-listenNetwork tcp \
 					-listenAddr 0.0.0.0:7778
 				`),

@@ -8,17 +8,14 @@ import (
 )
 
 var _ = Describe("Limits", func() {
-	const BTRFS_WAIT_TIME = 90
-
 	var container garden.Container
-	var startGardenArgs []string
 
 	var privilegedContainer bool
 	var rootfs string
 
 	JustBeforeEach(func() {
 		var err error
-		client = startGarden(startGardenArgs...)
+		client = startGarden()
 		container, err = client.Create(garden.ContainerSpec{Privileged: privilegedContainer, RootFSPath: rootfs})
 		Expect(err).ToNot(HaveOccurred())
 	})
@@ -32,13 +29,11 @@ var _ = Describe("Limits", func() {
 	BeforeEach(func() {
 		privilegedContainer = false
 		rootfs = ""
-		startGardenArgs = []string{}
 	})
 
 	Describe("LimitDisk", func() {
 		Context("with quotas disabled", func() {
 			BeforeEach(func() {
-				startGardenArgs = []string{"-disableQuotas=true"}
 				rootfs = runner.RootFSPath
 				privilegedContainer = true
 			})
