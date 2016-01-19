@@ -259,7 +259,7 @@ func (c *YarnContainer) Run(garden.ProcessSpec, garden.ProcessIO) (garden.Proces
 		return nil, errors.New("one process is enough")
 	}
 
-	c.cmd = exec.Command("bash -c 'sleep 100000'")
+	c.cmd = exec.Command("bash", "-c", "sleep 12345")
 	err := c.cmd.Start()
 	if err != nil {
 		return nil, err
