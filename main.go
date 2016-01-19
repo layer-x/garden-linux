@@ -499,7 +499,7 @@ func main() {
 
 	graceTime := *containerGraceTime
 
-	gardenServer := server.New(*listenNetwork, *listenAddr, graceTime, backend, logger)
+	gardenServer := server.New(*listenNetwork, *listenAddr, graceTime, &YarnBackend{RealBackend: backend}, logger)
 
 	err = gardenServer.Start()
 	if err != nil {
