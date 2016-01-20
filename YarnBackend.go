@@ -47,13 +47,14 @@ func (s *YarnBackend) Capacity() (garden.Capacity, error) {
 	return s.RealBackend.Capacity()
 }
 
-func isRootFsOurs(rootFs string) bool {
-	return strings.HasPrefix(rootFs, "yarn://nodemanager") || (strings.Contains(rootFs, "nodemanagermagic"))
+func isOurContainer(c garden.ContainerSpec) bool {
+
+	return strings.HasPrefix(c.RootFSPath, "yarn://nodemanager") || (strings.Contains(c.RootFSPath, "nodemanagermagic")) || (strings.Contains(c.RootFSPath, "ubuntu"))
 }
 
 func (s *YarnBackend) Create(c garden.ContainerSpec) (garden.Container, error) {
 	s.Logger.Debug("Create called", lager.Data{"RootFSPath": c.RootFSPath})
-	if isRootFsOurs(c.RootFSPath) {
+	if isOurContainer(c) {
 		if s.yarnContainer != nil {
 			s.Logger.Debug("container NOT created")
 			return nil, errors.New("Can't create more than one.")
@@ -72,10 +73,11 @@ func (s *YarnBackend) Destroy(handle string) error {
 	if handle == NMHandler {
 		if s.yarnContainer == nil {
 			s.Logger.Debug("Yaron container should not be nil here")
-			return nil
+		} else {
+			s.yarnContainer.kill()
+			s.yarnContainer = nil
 		}
-		s.yarnContainer.kill()
-		s.yarnContainer = nil
+		return nil
 	}
 	return s.RealBackend.Destroy(handle)
 }
@@ -336,13 +338,13 @@ func makeCmd(ps garden.ProcessSpec, pi garden.ProcessIO) *exec.Cmd {
 }
 
 func (c *YarnContainer) Run(ps garden.ProcessSpec, pi garden.ProcessIO) (garden.Process, error) {
-	c.Logger.Debug("Run")
+	c.Logger.Debug("Run", lager.Data{"spec": ps, "io": pi})
 	if c.cmd != nil {
 		c.Logger.Debug("one process is enough")
 		return nil, errors.New("one process is enough")
 	}
 
-	c.Logger.Debug("running bash")
+	c.Logger.Debug("running cmd")
 
 	c.cmd = makeCmd(ps, pi)
 	err := c.cmd.Start()
