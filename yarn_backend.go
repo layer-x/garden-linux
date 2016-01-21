@@ -106,7 +106,7 @@ func (s *YarnBackend) Create(c garden.ContainerSpec) (garden.Container, error) {
 		// make the tmp dir for diego
 		os.MkdirAll(filepath.Join(cntdir, "tmp"), 0755)
 
-		HandleBindMounts(c, cntdir)
+		err = s.HandleBindMounts(c, cntdir)
 		return cnt, err
 	}
 

@@ -1,13 +1,15 @@
 package main
 
 import (
+	"os"
 	"path/filepath"
 	"syscall"
 
 	"github.com/cloudfoundry-incubator/garden"
+	"github.com/pivotal-golang/lager"
 )
 
-func HandleBindMounts(c garden.ContainerSpec, containerDir string) {
+func (s *YarnBackend) HandleBindMounts(c garden.ContainerSpec, containerDir string) error {
 
 	for _, b := range c.BindMounts {
 		var flags uintptr = syscall.MS_BIND
@@ -20,6 +22,17 @@ func HandleBindMounts(c garden.ContainerSpec, containerDir string) {
 		if b.Origin == garden.BindMountOriginContainer {
 			src = filepath.Join(containerDir, src)
 		}
-		syscall.Mount(src, filepath.Join(containerDir, b.DstPath), "", flags, 0)
+		dst := filepath.Join(containerDir, b.DstPath)
+		s.Logger.Debug("Trying to mount", lager.Data{"src": src, "dst": dst})
+		// create dst if not exists
+		os.MkdirAll(dst, 0755)
+
+		err := syscall.Mount(src, dst, "", flags, "")
+		if err != nil {
+			s.Logger.Debug("MOUNT ERROR", lager.Data{"src": src, "dst": dst, "err": err})
+			return err
+		}
 	}
+
+	return nil
 }
