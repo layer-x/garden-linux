@@ -50,10 +50,10 @@ func (s *YarnBackend) Stop() {
 }
 
 func (s *YarnBackend) GetBacekndForContainer(handle string) (garden.Backend, error) {
-	if _, err := s.RealBackend.Lookup(handle); err != nil {
+	if _, err := s.RealBackend.Lookup(handle); err == nil {
 		return s.RealBackend, nil
 	}
-	if _, err := s.houdiniBackend.Lookup(handle); err != nil {
+	if _, err := s.houdiniBackend.Lookup(handle); err == nil {
 		return s.houdiniBackend, nil
 	}
 
